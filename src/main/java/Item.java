@@ -4,41 +4,47 @@ public class Item {
     private String type;
     private String expiration;
 
-    public String getName(){
+    public String getName() {
         return name;
     }
-    public void setName(String name){
+
+    public void setName(String name) {
         this.name = name;
     }
 
-    public String getPrice(){
+    public String getPrice() {
         return price;
     }
 
-    public void setPrice(){
+    public void setPrice() {
         this.price = price;
     }
 
-    public String getType(){
+    public String getType() {
         return type;
     }
 
-    public void setType(){
+    public void setType() {
         this.type = type;
     }
 
-    public String getExpiration(){
+    public String getExpiration() {
         return expiration;
     }
 
-    public void setExpiration(){
+    public void setExpiration() {
         this.expiration = expiration;
     }
 
-    public Item(String name, String price, String type, String expiration){
+    public Item(String name, String price, String type, String expiration) {
         this.name = name;
         this.price = price;
         this.type = type;
         this.expiration = expiration;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("Item{name='%s', price='%s', type='%s', expiration ='%s'");
     }
 }
