@@ -16,7 +16,7 @@ public class Item {
         return price;
     }
 
-    public void setPrice() {
+    public void setPrice(String price) {
         this.price = price;
     }
 
@@ -24,7 +24,7 @@ public class Item {
         return type;
     }
 
-    public void setType() {
+    public void setType(String type) {
         this.type = type;
     }
 
@@ -32,7 +32,7 @@ public class Item {
         return expiration;
     }
 
-    public void setExpiration() {
+    public void setExpiration(String expiration) {
         this.expiration = expiration;
     }
 
@@ -43,8 +43,8 @@ public class Item {
         this.expiration = expiration;
     }
 
-    @Override
-    public String toString() {
-        return String.format("Item{name='%s', price='%s', type='%s', expiration ='%s'");
-    }
+//    @Override
+//    public String toString() {
+//        return String.format("Item{name='%s', price='%s', type='%s', expiration ='%s'");
+//    }
 }
