@@ -1,63 +1,119 @@
+import javax.management.AttributeNotFoundException;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ItemParser {
-    public static void main(String[] args){
-        String inputData ="naMe:Milk;price:3.23;type:Food;expiration:1/25/2016##\n" +
-                "naME:BreaD;price:1.23;type:Food;expiration:1/02/2016##\n" +
-                "NAMe:BrEAD;price:1.23;type:Food;expiration:2/25/2016##\n" +
-                "naMe:MiLK;price:3.23;type:Food^expiration:1/11/2016##\n" +
-                "naMe:Cookies;price:2.25;type:Food%expiration:1/25/2016##\n" +
-                "naMe:CoOkieS;price:2.25;type:Food*expiration:1/25/2016##\n" +
-                "naMe:COokIes;price:2.25;type:Food;expiration:3/22/2016##\n" +
-                "naMe:COOkieS;price:2.25;type:Food;expiration:1/25/2016##\n" +
-                "NAME:MilK;price:3.23;type:Food;expiration:1/17/2016##\n" +
-                "naMe:MilK;price:1.23;type:Food!expiration:4/25/2016##\n" +
-                "naMe:apPles;price:0.25;type:Food;expiration:1/23/2016##\n" +
-                "naMe:apPles;price:0.23;type:Food;expiration:5/02/2016##\n" +
-                "NAMe:BrEAD;price:1.23;type:Food;expiration:1/25/2016##\n" +
-                "naMe:;price:3.23;type:Food;expiration:1/04/2016##\n" +
-                "naMe:Milk;price:3.23;type:Food;expiration:1/25/2016##\n" +
-                "naME:BreaD;price:1.23;type:Food@expiration:1/02/2016##\n" +
-                "NAMe:BrEAD;price:1.23;type:Food@expiration:2/25/2016##\n" +
-                "naMe:MiLK;priCe:;type:Food;expiration:1/11/2016##\n" +
-                "naMe:Cookies;price:2.25;type:Food;expiration:1/25/2016##\n" +
-                "naMe:Co0kieS;pRice:2.25;type:Food;expiration:1/25/2016##\n" +
-                "naMe:COokIes;price:2.25;type:Food;expiration:3/22/2016##\n" +
-                "naMe:COOkieS;Price:2.25;type:Food;expiration:1/25/2016##\n" +
-                "NAME:MilK;price:3.23;type:Food;expiration:1/17/2016##\n" +
-                "naMe:MilK;priCe:;type:Food;expiration:4/25/2016##\n" +
-                "naMe:apPles;prIce:0.25;type:Food;expiration:1/23/2016##\n" +
-                "naMe:apPles;pRice:0.23;type:Food;expiration:5/02/2016##\n" +
-                "NAMe:BrEAD;price:1.23;type:Food;expiration:1/25/2016##\n" +
-                "naMe:;price:3.23;type:Food^expiration:1/04/2016##";
+    private int errCount = 0;
+    public int getErrCount(){
+        return errCount;
+    }
 
-        List<Item> items = parseData(inputData);
-        for (Item item: items) {
-            System.out.println(item);
+    private String fieldPattern = "([A-Za-z0-9.]+)";
+    //checks for all letters whether upper or lower, digits, and periods.
+    private String stringSplitPattern = "([;:^@%*!])";
+    //these are what splits the strings, whether name, price, type, expiration;
+    private String itemSplitPattern = "((##))";
+    //this splits the entire item;
+
+    private Pattern fieldName = Pattern.compile(fieldPattern);
+    Pattern split = Pattern.compile(stringSplitPattern);
+    Pattern itemSplit = Pattern.compile(itemSplitPattern);
+    private ArrayList<Item> listItems = new ArrayList<>();
+    public ArrayList<Item> getListItems(){
+        return listItems;
+    }
+
+    public String[] stringSplit(String string) {
+        String[] splitStrings = string.split(stringSplitPattern);
+        //splitting the strings based on the ;@% etc;
+        return splitStrings;
+    }
+
+    public String countItems(String string){
+        StringBuilder chart = new StringBuilder();
+        LinkedHashMap<String, Integer> priceCount = new LinkedHashMap<>();
+        int strCount = 0;
+        for (Item i: listItems){
+            if(i.getName().equals(string)){
+                strCount ++;
+                if (priceCount.containsKey(i.getPrice())){
+                    priceCount.put(i.getPrice(), priceCount.get(i.getPrice())+1);
+                } else if (i.getPrice().equals("blank")) {
+                    strCount --;
+                    continue;
+                } else {
+                    priceCount.put(i.getPrice(), 1);
+                }
+            }
+        }
+        chart.append("name:\t" + string + "\t\t" + "seen: " + strCount + " times\n");
+        chart.append("=============\t\t=============\n");
+        int counter  = 0;
+        for(String key: priceCount.keySet()) {
+            chart.append("Price:\t" + key + "\t\t" + "seen: " + priceCount.get(key) + " times");
+            if(counter == 0) {
+                chart.append("\n-------------\t\t-------------\n");
+            }
+            counter ++;
+        }
+        return chart.toString();
+    }
+
+    public void addItem(String name, String price, String type, String exp){
+        listItems.add(new Item(name, price, type, exp));
+    }
+
+    public String nameClean(String string){
+        if(string.toLowerCase().charAt(0) == 'm') {
+            return "Milk";
+        } else if (string.toLowerCase().charAt(0) == 'a') {
+            return "Apples";
+        } else if (string.toLowerCase().charAt(0) == 'b') {
+            return "Bread";
+        } else if (string.toLowerCase().charAt(0) == 'c') {
+            return "Cookies";
+        } else {
+            return string;
         }
     }
 
-    public static List<Item> parseData(String inputData){
-        String rawRegex = "(?i)na(me)?\\s*:(?<name>[^;]+);\\" +
-                "s*pri(ce)?\\s*:(?<price>[^;]+);\\" +
-                "s*type\\s*:(?<type>[^@]+)@\\" +
-                "s*expiration\\s*:(?<expiration>[^#]+)##";
-        Pattern pattern = Pattern.compile(rawRegex);
-        Matcher matcher = pattern.matcher(inputData);
-
-        List<Item> items = new ArrayList<>();
-        while (matcher.find()) {
-            String name = matcher.group("name");
-            String price = matcher.group("price");
-            String type = matcher.group("type");
-            String expiration = matcher.group("expiration");
-
-            Item item = new Item(name, price, type, expiration);
-            items.add(item);
+    public String findItem(String string, int index) throws AttributeNotFoundException{
+        try{
+            Matcher mat = fieldName.matcher((stringSplit(string)[index]));
+            if(mat.find()){
+                return nameClean(mat.group());
+            } else {
+                errCount++;
+                throw new AttributeNotFoundException();
+            }
+        } catch (AttributeNotFoundException e){
+            System.err.println("Error was thrown: " + e);
+            //System.err prints out standard error;
+            return "blank";
         }
-        return items;
+    }
+
+    public void createItem(String input) throws AttributeNotFoundException {
+        String[] itemArr = input.split(itemSplitPattern);
+        for (int i = 0; i < itemArr.length; i++){
+            addItem(findItem(itemArr[i], 1), findItem(itemArr[i], 3),
+                    findItem(itemArr[i], 5), findItem(itemArr[i], 7));
+        }
+    }
+
+    public String groceryListConstructor() {
+        StringBuilder groceryList = new StringBuilder();
+        groceryList.append(countItems("Milk"));
+        groceryList.append("\n\n");
+        groceryList.append(countItems("Bread"));
+        groceryList.append("\n");
+        groceryList.append(countItems("Cookies"));
+        groceryList.append("\n");
+        groceryList.append(countItems("Apples"));
+        groceryList.append("\n\n");
+        groceryList.append("Errors\t\t\tseen: " + errCount + " times");
+        return groceryList.toString();
     }
 }

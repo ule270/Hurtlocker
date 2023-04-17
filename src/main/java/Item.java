@@ -43,8 +43,9 @@ public class Item {
         this.expiration = expiration;
     }
 
-//    @Override
-//    public String toString() {
-//        return String.format("Item{name='%s', price='%s', type='%s', expiration ='%s'");
-//    }
+    //so prints out string instead of object's memory address;
+    @Override
+    public String toString() {
+        return String.format("Name: %s, Price: $%.2f, Type: %s, Expiration: %s", name, price, type, expiration);
+    }
 }
